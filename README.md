@@ -25,11 +25,13 @@ A full-stack web application for real-time cloud cost estimation, multi-cloud co
 
 ## Project Structure
 
+```bash
 cloud-cost-optimizer/
 ├── frontend/
 ├── backend/
 ├── ai-service/
 └── docker-compose.yml
+```
 
 ## Getting Started
 
