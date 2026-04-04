@@ -70,7 +70,7 @@ function App() {
       <div className={`flex flex-col items-center justify-center h-screen ${dark ? "bg-gray-900" : "bg-gradient-to-br from-blue-50 to-indigo-100"}`}>
         <div className={`p-10 rounded-2xl shadow-2xl text-center w-96 ${dark ? "bg-gray-800 text-white" : "bg-white"}`}>
           <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white text-2xl font-bold">C</span>
+            <img src="/logo.png" alt="CloudBridge" className="w-20 h-20 rounded-2xl mx-auto mb-4" />
           </div>
           <h1 className="text-2xl font-bold mb-2">CloudOptimizer</h1>
           <p className={`text-sm mb-8 ${dark ? "text-gray-400" : "text-gray-500"}`}>AI-powered cloud cost optimization platform</p>
