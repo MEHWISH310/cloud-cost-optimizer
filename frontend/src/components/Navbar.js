@@ -7,6 +7,7 @@ function Navbar({ user, onLogout, dark, setDark }) {
 
   const links = [
     { path: "/", label: "Dashboard" },
+    { path: "/architecture", label: "Architecture" },
     { path: "/calculator", label: "Calculator" },
     { path: "/comparison", label: "Comparison" },
     { path: "/recommendation", label: "AI Recommendation" },

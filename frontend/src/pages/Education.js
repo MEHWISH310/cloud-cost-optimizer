@@ -88,6 +88,7 @@ function Education({ dark }) {
             Deployment Models
           </button>
         </div>
+
         <div className="grid grid-cols-1 gap-5">
           {items.map((item) => (
             <div key={item.title} className={card}>
@@ -118,6 +119,54 @@ function Education({ dark }) {
             </div>
           ))}
         </div>
+
+        {activeTab === "service" && (
+          <div className={`rounded-xl shadow p-6 mt-2 ${dark ? "bg-gray-800" : "bg-white"}`}>
+            <h2 className={`text-lg font-bold mb-4 ${dark ? "text-white" : "text-gray-800"}`}>Shared Responsibility Matrix</h2>
+            <p className={`text-sm mb-4 ${dark ? "text-gray-400" : "text-gray-500"}`}>
+              This matrix shows who is responsible for each layer of the cloud stack across different service models. "Provider" means the cloud vendor manages it. "User" means you are responsible. "Shared" means both parties have responsibilities.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-blue-600 text-white">
+                    <th className="p-3 text-left">Layer</th>
+                    <th className="p-3 text-center">On-Premise</th>
+                    <th className="p-3 text-center">IaaS</th>
+                    <th className="p-3 text-center">PaaS</th>
+                    <th className="p-3 text-center">SaaS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { layer: "Physical Hardware", onprem: "User", iaas: "Provider", paas: "Provider", saas: "Provider" },
+                    { layer: "Networking", onprem: "User", iaas: "Provider", paas: "Provider", saas: "Provider" },
+                    { layer: "Virtualization", onprem: "User", iaas: "Provider", paas: "Provider", saas: "Provider" },
+                    { layer: "Operating System", onprem: "User", iaas: "User", paas: "Provider", saas: "Provider" },
+                    { layer: "Middleware / Runtime", onprem: "User", iaas: "User", paas: "Provider", saas: "Provider" },
+                    { layer: "Application", onprem: "User", iaas: "User", paas: "User", saas: "Provider" },
+                    { layer: "Data", onprem: "User", iaas: "User", paas: "User", saas: "Shared" },
+                    { layer: "Identity & Access", onprem: "User", iaas: "Shared", paas: "Shared", saas: "Shared" },
+                    { layer: "Security Configuration", onprem: "User", iaas: "Shared", paas: "Shared", saas: "Shared" },
+                  ].map((row, i) => (
+                    <tr key={row.layer} className={i % 2 === 0 ? dark ? "bg-gray-700" : "bg-gray-50" : dark ? "bg-gray-800" : "bg-white"}>
+                      <td className={`p-3 font-medium ${dark ? "text-gray-300" : "text-gray-700"}`}>{row.layer}</td>
+                      {[row.onprem, row.iaas, row.paas, row.saas].map((val, j) => (
+                        <td key={j} className="p-3 text-center">
+                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                            val === "Provider" ? "bg-blue-100 text-blue-700" :
+                            val === "User" ? "bg-orange-100 text-orange-700" :
+                            "bg-green-100 text-green-700"
+                          }`}>{val}</span>
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

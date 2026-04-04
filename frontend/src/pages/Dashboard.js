@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 function Dashboard({ user, dark }) {
   const cards = [
+    { title: "System Architecture", desc: "View the complete system architecture and technology stack", path: "/architecture", color: "from-gray-500 to-gray-600" },
     { title: "Cost Calculator", desc: "Estimate real-time cloud costs for AWS, Azure, and GCP", path: "/calculator", color: "from-blue-500 to-blue-600" },
     { title: "Cloud Comparison", desc: "Compare providers side by side to find the best option", path: "/comparison", color: "from-green-500 to-green-600" },
     { title: "AI Recommendation", desc: "Get intelligent recommendations based on your needs", path: "/recommendation", color: "from-purple-500 to-purple-600" },
