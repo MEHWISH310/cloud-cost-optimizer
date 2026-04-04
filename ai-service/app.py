@@ -18,11 +18,9 @@ app.add_middleware(
 )
 
 if not os.path.exists("dataset.csv"):
-    print("Generating dataset...")
     generate_dataset()
 
 if not os.path.exists("model_service_model.pkl"):
-    print("Training models...")
     train_models()
 
 models, encoders, scalers = load_artifacts()
@@ -38,6 +36,10 @@ class InputData(BaseModel):
     uptime_requirement: Optional[float] = 99.9
     compliance_required: Optional[float] = 0
     existing_infra: Optional[float] = 0
+    uses_microsoft_stack: Optional[float] = 0
+    uses_google_workspace: Optional[float] = 0
+    multi_region: Optional[float] = 0
+    serverless_preference: Optional[float] = 0
 
 @app.post("/recommend")
 def recommend(data: InputData):

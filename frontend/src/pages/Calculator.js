@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import axios from "axios";
+import { auth } from "../firebase";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -14,7 +16,7 @@ function Calculator({ dark }) {
     GCP: { compute: 0.095, storage: 0.02, dataTransfer: 0.08 },
   };
 
-  const calculate = () => {
+  const calculate = async () => {
     const c = parseFloat(inputs.compute) || 0;
     const s = parseFloat(inputs.storage) || 0;
     const d = parseFloat(inputs.dataTransfer) || 0;
@@ -24,6 +26,19 @@ function Calculator({ dark }) {
       computed[provider] = { monthly: monthly.toFixed(2), yearly: (monthly * 12).toFixed(2) };
     }
     setResults(computed);
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        await axios.post("http://localhost:5000/api/history/save", {
+          uid: user.uid,
+          type: "calculation",
+          input: inputs,
+          output: computed,
+        });
+      }
+    } catch (err) {
+      console.error("History save error:", err);
+    }
   };
 
   const cheapest = results && Object.entries(results).sort((a, b) => a[1].monthly - b[1].monthly)[0][0];

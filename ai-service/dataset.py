@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def generate_dataset(n=1500):
+def generate_dataset(n=2000):
     np.random.seed(42)
 
     workloads = ["startup", "webapp", "enterprise", "ml"]
@@ -38,6 +38,12 @@ def generate_dataset(n=1500):
         compliance_required = 1 if security == "high" or (security == "moderate" and np.random.rand() > 0.6) else 0
         existing_infra = np.random.choice([0, 1], p=[0.6, 0.4])
 
+        uses_microsoft_stack = 1 if (workload == "enterprise" and np.random.rand() > 0.4) else 0
+        uses_google_workspace = 1 if (workload in ["startup", "webapp"] and np.random.rand() > 0.5) else 0
+        ml_focus = 1 if workload == "ml" else 0
+        multi_region = 1 if scalability == "high" and np.random.rand() > 0.4 else 0
+        serverless_preference = 1 if workload in ["startup", "webapp"] and budget < 2000 else 0
+
         score_iaas = 0
         score_paas = 0
         score_saas = 0
@@ -69,7 +75,7 @@ def generate_dataset(n=1500):
         if existing_infra:
             score_iaas += 1
 
-        noise = np.random.normal(0, 0.5, 3)
+        noise = np.random.normal(0, 0.4, 3)
         scores = np.array([score_iaas, score_paas, score_saas]) + noise
         service_model = ["IaaS", "PaaS", "SaaS"][np.argmax(scores)]
 
@@ -103,7 +109,7 @@ def generate_dataset(n=1500):
             score_hybrid += 1
             score_private += 1
 
-        noise = np.random.normal(0, 0.5, 3)
+        noise = np.random.normal(0, 0.4, 3)
         scores = np.array([score_public, score_private, score_hybrid]) + noise
         deployment_model = ["Public Cloud", "Private Cloud", "Hybrid Cloud"][np.argmax(scores)]
 
@@ -111,32 +117,46 @@ def generate_dataset(n=1500):
         score_azure = 0
         score_gcp = 0
 
-        if workload == "ml":
-            score_gcp += 3
-        if workload == "enterprise":
-            score_azure += 2
-            score_aws += 1
-        if workload in ["startup", "webapp"]:
+        if ml_focus:
+            score_gcp += 4
+        if uses_microsoft_stack:
+            score_azure += 4
+        if uses_google_workspace:
+            score_gcp += 2
+        if workload == "enterprise" and not uses_microsoft_stack:
             score_aws += 2
-            score_gcp += 1
+        if workload in ["startup", "webapp"] and not uses_google_workspace:
+            score_aws += 2
         if region == "eu":
-            score_azure += 1
+            score_azure += 2
         if region == "asia":
-            score_gcp += 1
+            score_gcp += 2
+            score_aws += 1
+        if region == "us":
+            score_aws += 1
         if budget > 20000:
             score_aws += 1
             score_azure += 1
         if budget < 500:
-            score_gcp += 1
+            score_gcp += 2
         if security == "high" and workload == "enterprise":
-            score_azure += 2
+            score_azure += 3
         if data_volume_gb > 1000:
+            score_aws += 2
+        if serverless_preference:
             score_aws += 1
             score_gcp += 1
-        if existing_infra and workload == "enterprise":
-            score_azure += 1
+        if multi_region:
+            score_aws += 1
+            score_gcp += 1
+        if compliance_required and region == "eu":
+            score_azure += 2
+        if scalability == "high" and ml_focus:
+            score_gcp += 2
+        if team_size > 200 and uses_microsoft_stack:
+            score_azure += 2
 
-        noise = np.random.normal(0, 0.5, 3)
+        noise = np.random.normal(0, 0.3, 3)
         scores = np.array([score_aws, score_azure, score_gcp]) + noise
         provider = ["AWS", "Azure", "GCP"][np.argmax(scores)]
 
@@ -151,6 +171,11 @@ def generate_dataset(n=1500):
             "uptime_requirement": uptime_requirement,
             "compliance_required": compliance_required,
             "existing_infra": existing_infra,
+            "uses_microsoft_stack": uses_microsoft_stack,
+            "uses_google_workspace": uses_google_workspace,
+            "ml_focus": ml_focus,
+            "multi_region": multi_region,
+            "serverless_preference": serverless_preference,
             "service_model": service_model,
             "deployment_model": deployment_model,
             "provider": provider,

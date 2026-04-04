@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -32,13 +32,16 @@ def train_models():
     features = [
         "budget", "workload_enc", "scalability_enc", "security_enc",
         "region_enc", "team_size", "data_volume_gb",
-        "uptime_requirement", "compliance_required", "existing_infra"
+        "uptime_requirement", "compliance_required", "existing_infra",
+        "uses_microsoft_stack", "uses_google_workspace",
+        "ml_focus", "multi_region", "serverless_preference"
     ]
 
     X = df[features]
     results = {}
 
     for target in ["service_model", "deployment_model", "provider"]:
+        print(f"\nTraining models for: {target}")
         le_target = LabelEncoder()
         y = le_target.fit_transform(df[target])
 
@@ -51,9 +54,10 @@ def train_models():
         X_test_scaled = scaler.transform(X_test)
 
         models = {
-            "Decision Tree": (DecisionTreeClassifier(max_depth=8, min_samples_split=10, random_state=42), False),
-            "Random Forest": (RandomForestClassifier(n_estimators=150, max_depth=10, random_state=42), False),
-            "Logistic Regression": (LogisticRegression(max_iter=1000, random_state=42, C=1.0), True),
+            "Decision Tree": (DecisionTreeClassifier(max_depth=10, min_samples_split=8, random_state=42), False),
+            "Random Forest": (RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42), False),
+            "Gradient Boosting": (GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=5, random_state=42), False),
+            "Logistic Regression": (LogisticRegression(max_iter=1000, random_state=42), True),
         }
 
         best_model = None
@@ -62,6 +66,7 @@ def train_models():
         model_comparison = {}
 
         for name, (model, use_scaled) in models.items():
+            print(f"  Training {name}...")
             Xtr = X_train_scaled if use_scaled else X_train
             Xte = X_test_scaled if use_scaled else X_test
             model.fit(Xtr, y_train)
@@ -77,6 +82,7 @@ def train_models():
                 "recall": round(float(rec), 4),
                 "f1_score": round(float(f1), 4),
             }
+            print(f"  {name}: Acc={acc:.4f}")
 
             if acc > best_acc:
                 best_acc = acc
@@ -110,10 +116,7 @@ def train_models():
             with open(f"scaler_{target}.pkl", "wb") as f:
                 pickle.dump(best_scaler, f)
 
-        print(f"\n{target}")
-        print(f"Best Model: {type(best_model).__name__} | Accuracy: {best_acc:.4f}")
-        for name, metrics in model_comparison.items():
-            print(f"  {name}: Acc={metrics['accuracy']} P={metrics['precision']} R={metrics['recall']} F1={metrics['f1_score']}")
+        print(f"Best: {type(best_model).__name__} | Accuracy: {best_acc:.4f}")
 
     with open("encoders.pkl", "wb") as f:
         pickle.dump(feature_encoders, f)

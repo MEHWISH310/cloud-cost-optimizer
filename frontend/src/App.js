@@ -9,6 +9,7 @@ import Comparison from "./pages/Comparison";
 import Recommendation from "./pages/Recommendation";
 import Education from "./pages/Education";
 import Tips from "./pages/Tips";
+import axios from "axios";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -16,9 +17,21 @@ function App() {
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setLoading(false);
+      if (currentUser) {
+        try {
+          await axios.post("http://localhost:5000/api/history/user", {
+            uid: currentUser.uid,
+            name: currentUser.displayName,
+            email: currentUser.email,
+            photo: currentUser.photoURL,
+          });
+        } catch (err) {
+          console.error("User registration error:", err);
+        }
+      }
     });
     return () => unsubscribe();
   }, []);
