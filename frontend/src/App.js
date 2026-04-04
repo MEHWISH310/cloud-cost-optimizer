@@ -10,6 +10,7 @@ import Recommendation from "./pages/Recommendation";
 import Education from "./pages/Education";
 import Tips from "./pages/Tips";
 import History from "./pages/History";
+import Metrics from "./pages/Metrics";
 import axios from "axios";
 
 function App() {
@@ -99,6 +100,7 @@ function App() {
           <Route path="/education" element={<Education dark={dark} />} />
           <Route path="/tips" element={<Tips dark={dark} />} />
           <Route path="/history" element={<History dark={dark} />} />
+          <Route path="/metrics" element={<Metrics dark={dark} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

@@ -9,6 +9,7 @@ function Dashboard({ user, dark }) {
     { title: "Learn Cloud Models", desc: "Understand IaaS, PaaS, SaaS and deployment models", path: "/education", color: "from-yellow-500 to-orange-500" },
     { title: "Optimization Tips", desc: "Reduce costs with smart resource optimization strategies", path: "/tips", color: "from-red-500 to-pink-500" },
     { title: "History", desc: "View your past calculations and AI recommendations", path: "/history", color: "from-indigo-500 to-indigo-600" },
+    { title: "ML Metrics", desc: "View model accuracy, confusion matrix and classification report", path: "/metrics", color: "from-teal-500 to-teal-600" },
   ];
 
   return (

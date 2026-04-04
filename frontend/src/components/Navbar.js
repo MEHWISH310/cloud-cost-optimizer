@@ -13,6 +13,7 @@ function Navbar({ user, onLogout, dark, setDark }) {
     { path: "/education", label: "Learn" },
     { path: "/tips", label: "Tips" },
     { path: "/history", label: "History" },
+    { path: "/metrics", label: "ML Metrics" },
   ];
 
   return (
