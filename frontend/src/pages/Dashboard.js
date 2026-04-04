@@ -8,6 +8,7 @@ function Dashboard({ user, dark }) {
     { title: "AI Recommendation", desc: "Get intelligent recommendations based on your needs", path: "/recommendation", color: "from-purple-500 to-purple-600" },
     { title: "Learn Cloud Models", desc: "Understand IaaS, PaaS, SaaS and deployment models", path: "/education", color: "from-yellow-500 to-orange-500" },
     { title: "Optimization Tips", desc: "Reduce costs with smart resource optimization strategies", path: "/tips", color: "from-red-500 to-pink-500" },
+    { title: "History", desc: "View your past calculations and AI recommendations", path: "/history", color: "from-indigo-500 to-indigo-600" },
   ];
 
   return (

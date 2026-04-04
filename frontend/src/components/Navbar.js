@@ -12,6 +12,7 @@ function Navbar({ user, onLogout, dark, setDark }) {
     { path: "/recommendation", label: "AI Recommendation" },
     { path: "/education", label: "Learn" },
     { path: "/tips", label: "Tips" },
+    { path: "/history", label: "History" },
   ];
 
   return (

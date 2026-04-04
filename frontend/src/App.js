@@ -9,6 +9,7 @@ import Comparison from "./pages/Comparison";
 import Recommendation from "./pages/Recommendation";
 import Education from "./pages/Education";
 import Tips from "./pages/Tips";
+import History from "./pages/History";
 import axios from "axios";
 
 function App() {
@@ -97,6 +98,7 @@ function App() {
           <Route path="/recommendation" element={<Recommendation dark={dark} />} />
           <Route path="/education" element={<Education dark={dark} />} />
           <Route path="/tips" element={<Tips dark={dark} />} />
+          <Route path="/history" element={<History dark={dark} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
