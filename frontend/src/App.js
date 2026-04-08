@@ -11,7 +11,6 @@ import Education from "./pages/Education";
 import Tips from "./pages/Tips";
 import History from "./pages/History";
 import Metrics from "./pages/Metrics";
-import Architecture from "./pages/Architecture";
 import axios from "axios";
 
 function App() {
@@ -95,7 +94,6 @@ function App() {
       <div className={`pt-16 min-h-screen ${dark ? "bg-gray-900 text-white" : "bg-gray-50"}`}>
         <Routes>
           <Route path="/" element={<Dashboard user={user} dark={dark} />} />
-          <Route path="/architecture" element={<Architecture dark={dark} />} />
           <Route path="/calculator" element={<Calculator dark={dark} />} />
           <Route path="/comparison" element={<Comparison dark={dark} />} />
           <Route path="/recommendation" element={<Recommendation dark={dark} />} />

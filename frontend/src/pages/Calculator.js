@@ -9,24 +9,33 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 function Calculator({ dark }) {
   const [inputs, setInputs] = useState({ compute: "", storage: "", dataTransfer: "" });
   const [results, setResults] = useState(null);
-
-  const pricing = {
-    AWS: { compute: 0.096, storage: 0.023, dataTransfer: 0.09 },
-    Azure: { compute: 0.1, storage: 0.02, dataTransfer: 0.087 },
-    GCP: { compute: 0.095, storage: 0.02, dataTransfer: 0.08 },
-  };
+  const [loading, setLoading] = useState(false);
 
   const calculate = async () => {
     const c = parseFloat(inputs.compute) || 0;
     const s = parseFloat(inputs.storage) || 0;
     const d = parseFloat(inputs.dataTransfer) || 0;
-    const computed = {};
-    for (const provider in pricing) {
-      const monthly = c * pricing[provider].compute * 730 + s * pricing[provider].storage + d * pricing[provider].dataTransfer;
-      computed[provider] = { monthly: monthly.toFixed(2), yearly: (monthly * 12).toFixed(2) };
-    }
-    setResults(computed);
+    
+    setLoading(true);
+    
     try {
+      const response = await axios.post("http://localhost:5000/api/pricing/calculate", {
+        cpu: c,
+        ram: Math.ceil(c * 2),
+        storage: s,
+        region: "us"
+      });
+      
+      const data = response.data;
+      
+      const computed = {
+        AWS: { monthly: data.monthlyCosts.aws, yearly: data.yearlyCosts.aws },
+        Azure: { monthly: data.monthlyCosts.azure, yearly: data.yearlyCosts.azure },
+        GCP: { monthly: data.monthlyCosts.gcp, yearly: data.yearlyCosts.gcp }
+      };
+      
+      setResults(computed);
+      
       const user = auth.currentUser;
       if (user) {
         await axios.post("http://localhost:5000/api/history/save", {
@@ -37,8 +46,23 @@ function Calculator({ dark }) {
         });
       }
     } catch (err) {
-      console.error("History save error:", err);
+      console.error("Pricing API error:", err);
+      
+      const pricing = {
+        AWS: { compute: 0.096, storage: 0.023, dataTransfer: 0.09 },
+        Azure: { compute: 0.1, storage: 0.02, dataTransfer: 0.087 },
+        GCP: { compute: 0.095, storage: 0.02, dataTransfer: 0.08 },
+      };
+      
+      const computed = {};
+      for (const provider in pricing) {
+        const monthly = c * pricing[provider].compute * 730 + s * pricing[provider].storage + d * pricing[provider].dataTransfer;
+        computed[provider] = { monthly: monthly.toFixed(2), yearly: (monthly * 12).toFixed(2) };
+      }
+      setResults(computed);
     }
+    
+    setLoading(false);
   };
 
   const cheapest = results && Object.entries(results).sort((a, b) => a[1].monthly - b[1].monthly)[0][0];
@@ -78,8 +102,8 @@ function Calculator({ dark }) {
               <input type="number" className={input} placeholder="e.g. 50" value={inputs.dataTransfer} onChange={(e) => setInputs({ ...inputs, dataTransfer: e.target.value })} />
             </div>
           </div>
-          <button onClick={calculate} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm">
-            Calculate Cost
+          <button onClick={calculate} disabled={loading} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-medium text-sm">
+            {loading ? "Fetching Real Prices..." : "Calculate Cost"}
           </button>
         </div>
 

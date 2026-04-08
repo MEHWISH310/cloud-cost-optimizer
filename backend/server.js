@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const historyRoutes = require("./routes/history");
+const pricingRoutes = require("./routes/pricing");
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/history", historyRoutes);
+app.use("/api/pricing", pricingRoutes);
 
 app.get("/", (req, res) => {
     res.json({ message: "Cloud Cost Optimizer API is running" });
