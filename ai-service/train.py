@@ -5,7 +5,8 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, confusion_matrix
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                             f1_score, classification_report, confusion_matrix)
 import pickle
 import json
 
@@ -62,7 +63,7 @@ def train_models():
 
         best_model = None
         best_acc = 0
-        best_scaler = None
+        best_use_scaler = False
         model_comparison = {}
 
         for name, (model, use_scaled) in models.items():
@@ -87,9 +88,9 @@ def train_models():
             if acc > best_acc:
                 best_acc = acc
                 best_model = model
-                best_scaler = scaler if use_scaled else None
+                best_use_scaler = use_scaled  # KEY FIX: track which model won
 
-        Xte_best = X_test_scaled if best_scaler else X_test
+        Xte_best = X_test_scaled if best_use_scaler else X_test
         y_pred_best = best_model.predict(Xte_best)
         cm = confusion_matrix(y_test, y_pred_best).tolist()
         report = classification_report(
@@ -112,11 +113,12 @@ def train_models():
             pickle.dump(best_model, f)
         with open(f"encoder_{target}.pkl", "wb") as f:
             pickle.dump(le_target, f)
-        if best_scaler:
-            with open(f"scaler_{target}.pkl", "wb") as f:
-                pickle.dump(best_scaler, f)
+        with open(f"scaler_{target}.pkl", "wb") as f:
+            pickle.dump(scaler, f)
+        with open(f"use_scaler_{target}.json", "w") as f:
+            json.dump({"use": best_use_scaler}, f)
 
-        print(f"Best: {type(best_model).__name__} | Accuracy: {best_acc:.4f}")
+        print(f"Best: {type(best_model).__name__} | Accuracy: {best_acc:.4f} | Uses scaler: {best_use_scaler}")
 
     with open("encoders.pkl", "wb") as f:
         pickle.dump(feature_encoders, f)

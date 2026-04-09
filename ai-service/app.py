@@ -23,7 +23,9 @@ if not os.path.exists("dataset.csv"):
 if not os.path.exists("model_service_model.pkl"):
     train_models()
 
-models, encoders, scalers = load_artifacts()
+# KEY FIX: load_artifacts now returns 4 values
+models, encoders, scalers, use_scalers = load_artifacts()
+
 
 class InputData(BaseModel):
     budget: float
@@ -41,15 +43,19 @@ class InputData(BaseModel):
     multi_region: Optional[float] = 0
     serverless_preference: Optional[float] = 0
 
+
 @app.post("/recommend")
 def recommend(data: InputData):
-    result = predict(data.dict(), models, encoders, scalers)
+    # KEY FIX: pass use_scalers to predict
+    result = predict(data.dict(), models, encoders, scalers, use_scalers)
     return result
+
 
 @app.get("/metrics")
 def get_metrics():
     with open("metrics.json", "r") as f:
         return json.load(f)
+
 
 @app.get("/health")
 def health():

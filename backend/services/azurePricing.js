@@ -1,38 +1,166 @@
+const fs = require('fs');
+const path = require('path');
+
 const REGION_MULTIPLIERS = {
     us: 1.0,
-    eu: 1.07,
-    asia: 1.14
+    eu: 1.08,
+    asia: 1.15
 };
 
-const AZURE_INSTANCES = {
-    2:  { type: 'D2s_v3',  vcpu: 2,  ram: 8,   pricePerHour: 0.096  },
-    4:  { type: 'D4s_v3',  vcpu: 4,  ram: 16,  pricePerHour: 0.192  },
-    8:  { type: 'D8s_v3',  vcpu: 8,  ram: 32,  pricePerHour: 0.384  },
-    16: { type: 'D16s_v3', vcpu: 16, ram: 64,  pricePerHour: 0.768  },
-    32: { type: 'D32s_v3', vcpu: 32, ram: 128, pricePerHour: 1.536  },
-    64: { type: 'D64s_v3', vcpu: 64, ram: 256, pricePerHour: 3.072  },
-};
+// Burstable instance prefixes to exclude
+// Azure B-series are burstable (B1ls, B1ms, B1s, B2als, B2as, B2ats, B2ls, etc.)
+const BURSTABLE_PREFIXES = ['b1', 'b2', 'b4', 'b8', 'b12', 'b16', 'b20', 'b32'];
 
-function getBestInstance(cpu) {
-    const keys = Object.keys(AZURE_INSTANCES).map(Number).sort((a, b) => a - b);
-    const match = keys.find(k => k >= cpu) || keys[keys.length - 1];
-    return AZURE_INSTANCES[match];
+let AZURE_INSTANCES = {};
+
+function isBurstable(instanceType) {
+    const lower = instanceType.toLowerCase();
+    return BURSTABLE_PREFIXES.some(prefix => lower.startsWith(prefix));
 }
 
-async function getAzurePricing(cpu, ram, region = 'us') {
-    const instance = getBestInstance(cpu);
+function loadAzureInstances() {
+    try {
+        const csvPath = path.join(__dirname, '../data/azure_instances.csv');
+        const csvData = fs.readFileSync(csvPath, 'utf8');
+        const lines = csvData.split('\n');
+
+        // Azure CSV columns (document 1):
+        // 0: Name, 1: API Name, 2: Instance Memory, 3: vCPUs, 4: Storage,
+        // 5: Linux On Demand cost, 6: Linux Savings Plan, 7: Linux Reserved cost,
+        // 8: Linux Spot cost, 9: Windows On Demand cost, ...
+
+        let loaded = 0;
+        let skipped = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const values = line.split(',');
+            if (values.length < 6) { skipped++; continue; }
+
+            const name    = values[0].trim();
+            const apiName = values[1].trim();
+
+            const memoryStr    = values[2].replace(/\s*GiB\s*/gi, '').trim();
+            const vcpuStr      = values[3].replace(/\s*vCPUs?\s*/gi, '').trim();
+
+            // Linux On Demand: "$0.192 hourly"
+            const onDemandRaw  = values[5].trim();
+            const onDemandStr  = onDemandRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
+
+            // Linux Reserved: index 7
+            const reservedRaw  = (values[7] || '').trim();
+            const reservedStr  = reservedRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
+
+            // Linux Spot: index 8
+            const spotRaw      = (values[8] || '').trim();
+            const spotStr      = spotRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
+
+            // Savings Plan: index 6
+            const savingsRaw   = (values[6] || '').trim();
+            const savingsStr   = savingsRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
+
+            const memory   = parseFloat(memoryStr);
+            const vcpu     = parseInt(vcpuStr, 10);
+            const onDemand = parseFloat(onDemandStr);
+            const reserved = parseFloat(reservedStr);
+            const spot     = parseFloat(spotStr);
+            const savings  = parseFloat(savingsStr);
+
+            if (!apiName || isNaN(vcpu) || isNaN(memory) || isNaN(onDemand) || onDemand <= 0) {
+                skipped++;
+                continue;
+            }
+
+            AZURE_INSTANCES[apiName] = {
+                type:          apiName,
+                name:          name,
+                vcpu:          vcpu,
+                ram:           memory,
+                pricePerHour:  onDemand,
+                spotPrice:     isNaN(spot)     ? onDemand * 0.35 : spot,
+                reservedPrice: isNaN(reserved) ? onDemand * 0.55 : reserved,
+                savingsPrice:  isNaN(savings)  ? onDemand * 0.60 : savings,
+                burstable:     isBurstable(apiName),
+            };
+            loaded++;
+        }
+
+        console.log(`Azure: loaded ${loaded}, skipped ${skipped} (total lines: ${lines.length - 1})`);
+    } catch (err) {
+        console.error('Error loading Azure CSV:', err);
+    }
+}
+
+loadAzureInstances();
+
+function getBestInstance(cpu, requestedRam, pricingType, allowBurstable = false) {
+    const eligible = [];
+
+    for (const key in AZURE_INSTANCES) {
+        const inst = AZURE_INSTANCES[key];
+
+        if (!allowBurstable && inst.burstable) continue;
+
+        if (inst.vcpu >= cpu && inst.ram >= requestedRam) {
+            eligible.push(inst);
+        }
+    }
+
+    if (eligible.length === 0) {
+        console.warn(`Azure: No eligible instance found for ${cpu} vCPUs / ${requestedRam} GB RAM — using largest`);
+        let largest = null;
+        for (const key in AZURE_INSTANCES) {
+            const inst = AZURE_INSTANCES[key];
+            if (!allowBurstable && inst.burstable) continue;
+            if (!largest || inst.vcpu > largest.vcpu || (inst.vcpu === largest.vcpu && inst.ram > largest.ram)) {
+                largest = inst;
+            }
+        }
+        return largest;
+    }
+
+    const priceKey = pricingType === 'spot'        ? 'spotPrice'     :
+                     pricingType === 'reserved'     ? 'reservedPrice' :
+                     pricingType === 'savingsPlan'  ? 'savingsPrice'  : 'pricePerHour';
+
+    eligible.sort((a, b) => a[priceKey] - b[priceKey]);
+    return eligible[0];
+}
+
+async function getAzurePricing(cpu, ram, region = 'us', pricingType = 'onDemand') {
+    const instance = getBestInstance(cpu, ram, pricingType, false);
+
+    if (!instance) {
+        throw new Error('No Azure instance found for the given requirements');
+    }
+
     const multiplier = REGION_MULTIPLIERS[region] || 1.0;
-    const finalPrice = instance.pricePerHour * multiplier;
+
+    let finalPrice;
+    if (pricingType === 'spot') {
+        finalPrice = instance.spotPrice * multiplier;
+    } else if (pricingType === 'reserved') {
+        finalPrice = instance.reservedPrice * multiplier;
+    } else if (pricingType === 'savingsPlan') {
+        finalPrice = instance.savingsPrice * multiplier;
+    } else {
+        finalPrice = instance.pricePerHour * multiplier;
+    }
+
+    console.log(`Azure selected: ${instance.type} (${instance.vcpu} vCPU / ${instance.ram} GB) @ $${finalPrice.toFixed(4)}/hr`);
 
     return {
-        skuName: instance.type,
-        vcpu: instance.vcpu,
-        memory: instance.ram,
+        skuName:      instance.type,
+        vcpu:         instance.vcpu,
+        memory:       instance.ram,
         pricePerHour: Math.round(finalPrice * 10000) / 10000,
         monthlyPrice: Math.round(finalPrice * 730 * 100) / 100,
-        source: 'azure.microsoft.com/en-us/pricing/details/virtual-machines',
-        region
+        source:       'azure.microsoft.com/en-us/pricing/details/virtual-machines/linux/',
+        region,
+        pricingType,
     };
 }
 
-module.exports = { getAzurePricing };
+module.exports = { getAzurePricing, AZURE_INSTANCES, REGION_MULTIPLIERS };

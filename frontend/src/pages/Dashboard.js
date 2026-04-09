@@ -100,19 +100,19 @@ function Dashboard({ user, dark }) {
               </thead>
               <tbody>
                 {[
-                  ["Service Model", "Gradient Boosting", "94.50%", "94.44%", "94.50%", "94.45%"],
-                  ["Deployment Model", "Random Forest", "88.25%", "88.77%", "88.25%", "87.16%"],
-                  ["Cloud Provider", "Gradient Boosting", "93.50%", "93.49%", "93.50%", "93.48%"],
-                ].map(([model, algo, acc, prec, rec, f1]) => (
-                  <tr key={model} className={`border-t ${tableBorder}`}>
-                    <td className={`p-3 font-semibold ${th}`}>{model}</td>
-                    <td className={`p-3 ${tableText}`}>{algo}</td>
-                    <td className="p-3 font-bold text-green-500">{acc}</td>
-                    <td className={`p-3 ${tableText}`}>{prec}</td>
-                    <td className={`p-3 ${tableText}`}>{rec}</td>
-                    <td className={`p-3 ${tableText}`}>{f1}</td>
-                  </tr>
-                ))}
+                ["Service Model", "Random Forest", "97.00%", "97.02%", "97.00%", "96.99%"],
+                ["Deployment Model", "Decision Tree", "95.00%", "95.05%", "95.00%", "94.95%"],
+                ["Cloud Provider", "Gradient Boosting", "95.00%", "94.98%", "95.00%", "94.98%"],
+              ].map(([model, algo, acc, prec, rec, f1]) => (
+                <tr key={model} className={`border-t ${tableBorder}`}>
+                  <td className={`p-3 font-semibold ${th}`}>{model}</td>
+                  <td className={`p-3 ${tableText}`}>{algo}</td>
+                  <td className="p-3 font-bold text-green-500">{acc}</td>
+                  <td className={`p-3 ${tableText}`}>{prec}</td>
+                  <td className={`p-3 ${tableText}`}>{rec}</td>
+                  <td className={`p-3 ${tableText}`}>{f1}</td>
+                </tr>
+              ))}
               </tbody>
             </table>
           </div>

@@ -1,22 +1,31 @@
 import pickle
 import numpy as np
 import os
+import json
+
 
 def load_artifacts():
     models = {}
     encoders = {}
     scalers = {}
+    use_scalers = {}
+
     for target in ["service_model", "deployment_model", "provider"]:
         with open(f"model_{target}.pkl", "rb") as f:
             models[target] = pickle.load(f)
         with open(f"encoder_{target}.pkl", "rb") as f:
             encoders[target] = pickle.load(f)
-        if os.path.exists(f"scaler_{target}.pkl"):
-            with open(f"scaler_{target}.pkl", "rb") as f:
-                scalers[target] = pickle.load(f)
+        # KEY FIX: always load scaler + the flag
+        with open(f"scaler_{target}.pkl", "rb") as f:
+            scalers[target] = pickle.load(f)
+        with open(f"use_scaler_{target}.json", "r") as f:
+            use_scalers[target] = json.load(f)["use"]
+
     with open("encoders.pkl", "rb") as f:
         encoders["features"] = pickle.load(f)
-    return models, encoders, scalers
+
+    return models, encoders, scalers, use_scalers
+
 
 def encode_input(data, feature_encoders):
     fe = feature_encoders
@@ -42,6 +51,7 @@ def encode_input(data, feature_encoders):
         float(data.get("multi_region", 0)),
         float(data.get("serverless_preference", 0)),
     ]])
+
 
 def build_reason(data, provider, service, deployment):
     reasons = []
@@ -133,12 +143,14 @@ def build_reason(data, provider, service, deployment):
 
     return intro + details
 
-def predict(data, models, encoders, scalers):
+
+def predict(data, models, encoders, scalers, use_scalers):
     X = encode_input(data, encoders["features"])
 
     results = {}
     for target in ["service_model", "deployment_model", "provider"]:
-        Xi = scalers[target].transform(X) if target in scalers else X
+        # KEY FIX: only scale if the winning model needed scaling
+        Xi = scalers[target].transform(X) if use_scalers[target] else X
         pred = models[target].predict(Xi)
         results[target] = encoders[target].inverse_transform(pred)[0]
 

@@ -67,7 +67,7 @@ function App() {
     return (
       <div className={`flex flex-col items-center justify-center min-h-screen ${dark ? "bg-gray-950" : "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100"}`}>
         <div className={`rounded-3xl shadow-2xl text-center w-[420px] overflow-hidden ${dark ? "bg-gray-900 text-white" : "bg-white"}`}>
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-10 pt-10 pb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-10 pt-10 pb-8">
             <img src="/logo.png" alt="CloudBridge" className="w-20 h-20 rounded-2xl mx-auto mb-5 shadow-lg" />
             <h1 className="text-2xl font-bold text-white mb-1">CloudBridge</h1>
             <p className="text-blue-100 text-sm">AI-powered cloud cost optimization</p>
