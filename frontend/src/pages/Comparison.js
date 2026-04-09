@@ -152,18 +152,32 @@ function Comparison({ dark }) {
     },
   };
 
-  const barData = results && {
-    labels: ["AWS", "Azure", "GCP"],
-    datasets: [
-      {
-        label: `Monthly Cost (USD) - ${pricingOptions.find(p => p.value === pricingType)?.label || "On-Demand"}`,
-        data: [parseFloat(results.AWS.monthly), parseFloat(results.Azure.monthly), parseFloat(results.GCP.monthly)],
-        backgroundColor: ["#FF9900", "#008AD7", "#34A853"],
-        borderRadius: 6,
-        borderSkipped: false,
-      },
-    ],
-  };
+const barData = results && {
+  labels: ["AWS", "Azure", "GCP"],
+  datasets: [
+    {
+      label: "Compute",
+      data: [parseFloat(results.AWS.compute), parseFloat(results.Azure.compute), parseFloat(results.GCP.compute)],
+      backgroundColor: "#008AD7",
+      borderRadius: 0,
+      borderSkipped: false,
+    },
+    {
+      label: "Storage",
+      data: [parseFloat(results.AWS.storage), parseFloat(results.Azure.storage), parseFloat(results.GCP.storage)],
+      backgroundColor: "#8b5cf6",
+      borderRadius: 0,
+      borderSkipped: false,
+    },
+    {
+      label: "Transfer",
+      data: [parseFloat(results.AWS.transfer), parseFloat(results.Azure.transfer), parseFloat(results.GCP.transfer)],
+      backgroundColor: "#f59e0b",
+      borderRadius: 6,
+      borderSkipped: false,
+    },
+  ],
+};
 
   const tableRows = results
     ? [
@@ -289,7 +303,7 @@ function Comparison({ dark }) {
                   </p>
                   <div className="mb-4 space-y-2">
                     {[
-                      { label: "Compute", value: data.compute, color: data.color },
+                      { label: "Compute", value: data.compute, color: "#008AD7" },
                       { label: "Storage", value: data.storage, color: "#8b5cf6" },
                       { label: "Transfer", value: data.transfer, color: "#f59e0b" },
                     ].map(({ label, value, color }) => {
@@ -330,30 +344,36 @@ function Comparison({ dark }) {
                   Monthly Cost Comparison ({pricingOptions.find(p => p.value === pricingType)?.label})
                 </h2>
                 <Bar
-                  data={barData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                      ...chartDefaults.plugins,
-                      tooltip: { callbacks: { label: (ctx) => `$${ctx.parsed.y}` } },
-                    },
-                    scales: {
-                      x: {
-                        ticks: { color: dark ? "#ccc" : "#555", font: { size: 11 } },
-                        grid: { display: false },
-                      },
-                      y: {
-                        ticks: {
-                          color: dark ? "#ccc" : "#555",
-                          font: { size: 11 },
-                          callback: (v) => `$${v}`,
-                        },
-                        grid: { color: dark ? "#374151" : "#f3f4f6" },
-                      },
-                    },
-                  }}
-                />
+  data={barData}
+  options={{
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      ...chartDefaults.plugins,
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        stacked: true,
+        ticks: { color: dark ? "#ccc" : "#555", font: { size: 11 } },
+        grid: { display: false },
+      },
+      y: {
+        stacked: true,
+        ticks: {
+          color: dark ? "#ccc" : "#555",
+          font: { size: 11 },
+          callback: (v) => `$${v}`,
+        },
+        grid: { color: dark ? "#374151" : "#f3f4f6" },
+      },
+    },
+  }}
+/>
               </div>
             </div>
 
