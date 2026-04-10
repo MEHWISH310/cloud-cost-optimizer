@@ -7,8 +7,6 @@ const REGION_MULTIPLIERS = {
     asia: 1.15
 };
 
-// Burstable instance prefixes to exclude
-// Azure B-series are burstable (B1ls, B1ms, B1s, B2als, B2as, B2ats, B2ls, etc.)
 const BURSTABLE_PREFIXES = ['b1', 'b2', 'b4', 'b8', 'b12', 'b16', 'b20', 'b32'];
 
 let AZURE_INSTANCES = {};
@@ -23,11 +21,6 @@ function loadAzureInstances() {
         const csvPath = path.join(__dirname, '../data/azure_instances.csv');
         const csvData = fs.readFileSync(csvPath, 'utf8');
         const lines = csvData.split('\n');
-
-        // Azure CSV columns (document 1):
-        // 0: Name, 1: API Name, 2: Instance Memory, 3: vCPUs, 4: Storage,
-        // 5: Linux On Demand cost, 6: Linux Savings Plan, 7: Linux Reserved cost,
-        // 8: Linux Spot cost, 9: Windows On Demand cost, ...
 
         let loaded = 0;
         let skipped = 0;
@@ -45,19 +38,15 @@ function loadAzureInstances() {
             const memoryStr    = values[2].replace(/\s*GiB\s*/gi, '').trim();
             const vcpuStr      = values[3].replace(/\s*vCPUs?\s*/gi, '').trim();
 
-            // Linux On Demand: "$0.192 hourly"
             const onDemandRaw  = values[5].trim();
             const onDemandStr  = onDemandRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
 
-            // Linux Reserved: index 7
             const reservedRaw  = (values[7] || '').trim();
             const reservedStr  = reservedRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
 
-            // Linux Spot: index 8
             const spotRaw      = (values[8] || '').trim();
             const spotStr      = spotRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
 
-            // Savings Plan: index 6
             const savingsRaw   = (values[6] || '').trim();
             const savingsStr   = savingsRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
 

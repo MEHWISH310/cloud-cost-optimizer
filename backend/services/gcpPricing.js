@@ -7,10 +7,8 @@ const REGION_MULTIPLIERS = {
     asia: 1.13
 };
 
-// GCP shared-core / burstable machine types to exclude
-// e2-micro, e2-small, e2-medium are shared-core (burstable)
 const BURSTABLE_TYPES = ['e2-micro', 'e2-small', 'e2-medium'];
-const BURSTABLE_PREFIXES = ['f1-', 'g1-'];  // legacy shared-core
+const BURSTABLE_PREFIXES = ['f1-', 'g1-'];  
 
 let GCP_INSTANCES = {};
 
@@ -25,11 +23,6 @@ function loadGCPInstances() {
         const csvPath = path.join(__dirname, '../data/gcp_instances.csv');
         const csvData = fs.readFileSync(csvPath, 'utf8');
         const lines = csvData.split('\n');
-
-        // GCP CSV columns (document 3):
-        // 0: Instance Name, 1: API Name, 2: Instance Memory, 3: vCPUs,
-        // 4: Linux On Demand cost, 5: Linux Spot cost,
-        // 6: Windows On Demand cost, 7: Windows Spot cost
 
         let loaded = 0;
         let skipped = 0;
@@ -47,11 +40,9 @@ function loadGCPInstances() {
             const memoryStr   = values[2].replace(/\s*GiB\s*/gi, '').trim();
             const vcpuStr     = values[3].replace(/\s*vCPUs?\s*/gi, '').trim();
 
-            // On Demand: "$0.0535 hourly"
             const onDemandRaw = values[4].trim();
             const onDemandStr = onDemandRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
 
-            // Spot: "$0.0113 hourly"
             const spotRaw     = (values[5] || '').trim();
             const spotStr     = spotRaw.replace(/\$|\s*hourly\s*/gi, '').trim();
 
@@ -65,8 +56,7 @@ function loadGCPInstances() {
                 continue;
             }
 
-            // GCP doesn't have a "reserved" tier per se; committed use discounts (CUD) are ~30-57% off
-            const committedPrice = onDemand * 0.70; // 1-year committed use discount (~30% off)
+            const committedPrice = onDemand * 0.70; 
 
             GCP_INSTANCES[apiName] = {
                 type:            apiName,
@@ -115,7 +105,6 @@ function getBestInstance(cpu, requestedRam, pricingType, allowBurstable = false)
         return largest;
     }
 
-    // For GCP, "reserved" maps to committed use discount price
     const priceKey = pricingType === 'spot'                        ? 'spotPrice'      :
                      pricingType === 'reserved' ||
                      pricingType === 'savingsPlan'                  ? 'committedPrice' : 'pricePerHour';

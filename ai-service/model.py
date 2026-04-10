@@ -149,7 +149,6 @@ def predict(data, models, encoders, scalers, use_scalers):
 
     results = {}
     for target in ["service_model", "deployment_model", "provider"]:
-        # KEY FIX: only scale if the winning model needed scaling
         Xi = scalers[target].transform(X) if use_scalers[target] else X
         pred = models[target].predict(Xi)
         results[target] = encoders[target].inverse_transform(pred)[0]

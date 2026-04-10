@@ -44,7 +44,6 @@ def generate_dataset(n=2000):
         multi_region = 1 if scalability == "high" and np.random.rand() > 0.4 else 0
         serverless_preference = 1 if workload in ["startup", "webapp"] and budget < 2000 else 0
 
-        # --- Service model scoring (reduced noise: 0.15 instead of 0.4) ---
         score_iaas = 0
         score_paas = 0
         score_saas = 0
@@ -76,12 +75,10 @@ def generate_dataset(n=2000):
         if existing_infra:
             score_iaas += 2
 
-        # KEY FIX: noise reduced from 0.4 to 0.15
         noise = np.random.normal(0, 0.15, 3)
         scores = np.array([score_iaas, score_paas, score_saas]) + noise
         service_model = ["IaaS", "PaaS", "SaaS"][np.argmax(scores)]
 
-        # --- Deployment model scoring ---
         score_public = 0
         score_private = 0
         score_hybrid = 0
@@ -115,12 +112,10 @@ def generate_dataset(n=2000):
             score_hybrid += 2
             score_private += 1
 
-        # KEY FIX: noise reduced from 0.4 to 0.15
         noise = np.random.normal(0, 0.15, 3)
         scores = np.array([score_public, score_private, score_hybrid]) + noise
         deployment_model = ["Public Cloud", "Private Cloud", "Hybrid Cloud"][np.argmax(scores)]
 
-        # --- Provider scoring ---
         score_aws = 0
         score_azure = 0
         score_gcp = 0
@@ -164,7 +159,6 @@ def generate_dataset(n=2000):
         if team_size > 200 and uses_microsoft_stack:
             score_azure += 3
 
-        # KEY FIX: noise reduced from 0.3 to 0.1
         noise = np.random.normal(0, 0.1, 3)
         scores = np.array([score_aws, score_azure, score_gcp]) + noise
         provider = ["AWS", "Azure", "GCP"][np.argmax(scores)]
