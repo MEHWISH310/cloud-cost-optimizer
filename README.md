@@ -20,8 +20,6 @@ A full-stack web application for real-time cloud cost estimation, multi-cloud co
 - AI/ML: Python, FastAPI, Scikit-learn
 - Auth: Firebase Authentication
 - Database: MongoDB
-- APIs: AWS Pricing API, Azure Pricing API, GCP Pricing API
-- DevOps: Docker
 
 ## Project Structure
 
@@ -30,7 +28,6 @@ cloud-cost-optimizer/
 ├── frontend/
 ├── backend/
 ├── ai-service/
-└── docker-compose.yml
 ```
 
 ## Getting Started
