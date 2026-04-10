@@ -173,7 +173,7 @@ const barData = results && {
       label: "Transfer",
       data: [parseFloat(results.AWS.transfer), parseFloat(results.Azure.transfer), parseFloat(results.GCP.transfer)],
       backgroundColor: "#f59e0b",
-      borderRadius: 6,
+      borderRadius: 0,
       borderSkipped: false,
     },
   ],

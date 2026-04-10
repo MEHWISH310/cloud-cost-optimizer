@@ -36,50 +36,10 @@ const TOGGLES = [
   { field: "serverless_preference", label: "Prefer serverless", desc: "Lambda/Functions preferred over managed VMs" },
 ];
 
-// Inject global styles once
-const GLOBAL_CSS = `
-  .rec-input {
-    width: 100%;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    box-sizing: border-box;
-  }
-  .rec-input::placeholder { opacity: 1; }
-  .rec-input:focus { box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
-  .rec-input.err:focus { box-shadow: 0 0 0 3px rgba(248,113,113,0.2); }
-  .rec-input-dark {
-    background: #1e2433;
-    color: #f1f5f9;
-    border: 1px solid #2d3748;
-  }
-  .rec-input-dark::placeholder { color: #64748b; }
-  .rec-input-dark:focus { border-color: #3b82f6; }
-  .rec-input-dark.err { border-color: #f87171; }
-  .rec-input-light {
-    background: #ffffff;
-    color: #0f172a;
-    border: 1px solid #cbd5e1;
-  }
-  .rec-input-light::placeholder { color: #94a3b8; }
-  .rec-input-light:focus { border-color: #3b82f6; }
-  .rec-input-light.err { border-color: #f87171; }
-  .region-btn:hover { opacity: 0.85; }
-  @keyframes rec-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  .rec-spin { animation: rec-spin 1s linear infinite; }
-`;
-
+// ── Segmented Control ──────────────────────────────────────────────────────────
 function SegmentedControl({ options, value, onChange, dark }) {
   return (
-    <div style={{
-      display: "flex",
-      borderRadius: "10px",
-      overflow: "hidden",
-      border: dark ? "1px solid #2d3748" : "1px solid #cbd5e1",
-      background: dark ? "#151a27" : "#f1f5f9",
-    }}>
+    <div className={`flex rounded-lg overflow-hidden border ${dark ? "border-gray-700 bg-gray-950" : "border-gray-200 bg-gray-100"}`}>
       {options.map((opt, i) => {
         const selected = value === opt.value;
         return (
@@ -87,44 +47,20 @@ function SegmentedControl({ options, value, onChange, dark }) {
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "11px 8px",
-              border: "none",
-              borderLeft: i > 0 ? (dark ? "1px solid #2d3748" : "1px solid #cbd5e1") : "none",
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              background: selected
-                ? dark ? "#1a2d52" : "#ffffff"
-                : "transparent",
-              boxShadow: selected
-                ? dark ? "inset 0 0 0 1.5px #3b82f6" : "inset 0 0 0 1.5px #3b82f6"
-                : "none",
-            }}
+            className={`flex-1 flex flex-col items-center justify-center py-3 px-2 text-xs font-semibold transition-all duration-150
+              ${i > 0 ? (dark ? "border-l border-gray-700" : "border-l border-gray-200") : ""}
+              ${selected
+                ? dark
+                  ? "bg-blue-600/20 text-blue-400 shadow-inner ring-inset ring-1 ring-blue-500"
+                  : "bg-white text-blue-600 shadow ring-inset ring-1 ring-blue-500"
+                : dark
+                  ? "bg-transparent text-gray-300 hover:text-white"
+                  : "bg-transparent text-gray-600 hover:text-gray-900"
+              }`}
           >
-            <span style={{
-              fontSize: "12px",
-              fontWeight: 600,
-              color: selected
-                ? dark ? "#93b4ff" : "#1d4ed8"
-                : dark ? "#94a3b8" : "#64748b",
-              lineHeight: 1,
-              marginBottom: opt.desc ? "4px" : 0,
-            }}>
-              {opt.label}
-            </span>
+            <span className="leading-none mb-0.5">{opt.label}</span>
             {opt.desc && (
-              <span style={{
-                fontSize: "11px",
-                color: selected
-                  ? dark ? "#6490e8" : "#3b82f6"
-                  : dark ? "#4b5a70" : "#94a3b8",
-                lineHeight: 1.2,
-              }}>
+               <span className={`text-[10px] leading-tight ${selected ? (dark ? "text-blue-500" : "text-blue-400") : dark ? "text-gray-400" : "text-gray-500"}`}>
                 {opt.desc}
               </span>
             )}
@@ -135,87 +71,58 @@ function SegmentedControl({ options, value, onChange, dark }) {
   );
 }
 
+// ── Toggle Row ────────────────────────────────────────────────────────────────
 function ToggleRow({ field, label, desc, value, onChange, dark }) {
+  const active = value === 1;
   return (
     <div
-      onClick={() => onChange(field, value === 1 ? 0 : 1)}
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: "12px",
-        padding: "12px",
-        borderRadius: "8px",
-        border: value === 1
-          ? "1px solid rgba(59,130,246,0.45)"
-          : dark ? "1px solid #222b3a" : "1px solid #e2e8f0",
-        background: value === 1
-          ? dark ? "rgba(59,130,246,0.1)" : "rgba(59,130,246,0.05)"
-          : dark ? "#181e2c" : "#f8fafc",
-        cursor: "pointer",
-        userSelect: "none",
-        transition: "all 0.15s ease",
-      }}
+      onClick={() => onChange(field, active ? 0 : 1)}
+      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer select-none transition-all duration-150
+        ${active
+          ? dark
+            ? "border-blue-500/40 bg-blue-600/10"
+            : "border-blue-400/40 bg-blue-50"
+          : dark
+            ? "border-gray-800 bg-gray-900 hover:border-gray-700"
+            : "border-gray-100 bg-gray-50 hover:border-gray-200"
+        }`}
     >
-      <div style={{
-        marginTop: "2px",
-        width: "36px",
-        height: "20px",
-        borderRadius: "10px",
-        flexShrink: 0,
-        position: "relative",
-        background: value === 1 ? "#3b82f6" : dark ? "#2d3748" : "#cbd5e1",
-        transition: "background 0.15s ease",
-      }}>
-        <div style={{
-          position: "absolute",
-          top: "2px",
-          left: value === 1 ? "18px" : "2px",
-          width: "16px",
-          height: "16px",
-          borderRadius: "50%",
-          background: "white",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
-          transition: "left 0.15s ease",
-        }} />
+      {/* pill toggle */}
+      <div className={`mt-0.5 w-9 h-5 rounded-full flex-shrink-0 relative transition-colors duration-150
+        ${active ? "bg-blue-500" : dark ? "bg-gray-700" : "bg-gray-300"}`}>
+        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-150
+          ${active ? "left-[18px]" : "left-0.5"}`} />
       </div>
       <div>
-        <p style={{
-          fontSize: "13px",
-          fontWeight: 500,
-          color: dark ? "#e2e8f0" : "#1e293b",
-          marginBottom: "3px",
-          lineHeight: 1.2,
-        }}>{label}</p>
-        <p style={{
-          fontSize: "11px",
-          color: dark ? "#64748b" : "#94a3b8",
-          lineHeight: 1.3,
-        }}>{desc}</p>
+        <p className={`text-xs font-medium leading-tight mb-0.5 ${dark ? "text-gray-200" : "text-gray-700"}`}>{label}</p>
+        <p className={`text-[11px] leading-tight ${dark ? "text-gray-500" : "text-gray-400"}`}>{desc}</p>
       </div>
     </div>
   );
 }
 
-function Section({ title, dark, children, first }) {
+// ── Section Card ──────────────────────────────────────────────────────────────
+function Section({ title, dark, children }) {
   return (
-    <div style={{
-      background: dark ? "#171c2b" : "#ffffff",
-      border: dark ? "1px solid #222b3a" : "1px solid #e2e8f0",
-      borderRadius: "12px",
-      padding: "24px",
-      marginTop: first ? 0 : "14px",
-    }}>
-      <p style={{
-        fontSize: "10px",
-        fontWeight: 700,
-        letterSpacing: "0.1em",
-        textTransform: "uppercase",
-        color: dark ? "#4a6080" : "#94a3b8",
-        marginBottom: "18px",
-        margin: "0 0 18px 0",
-      }}>{title}</p>
+    <div className={`rounded-xl p-6 border shadow-sm ${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"}`}>
+      <p className={`text-[10px] font-bold tracking-widest uppercase mb-4 ${dark ? "text-blue-400" : "text-blue-600"}`}>
+        {title}
+      </p>
       {children}
     </div>
+  );
+}
+
+function ErrMsg({ msg }) {
+  if (!msg) return null;
+  return (
+    <p className="flex items-center gap-1 text-[11px] mt-1.5 text-red-400">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+        <circle cx="6" cy="6" r="5.5" stroke="currentColor" />
+        <path d="M6 3.5v3M6 8v.5" stroke="currentColor" strokeLinecap="round" />
+      </svg>
+      {msg}
+    </p>
   );
 }
 
@@ -246,7 +153,7 @@ function Recommendation({ dark }) {
     if (!form.team_size || parseFloat(form.team_size) <= 0) e.team_size = "Enter your team size";
     if (!form.data_volume_gb || parseFloat(form.data_volume_gb) <= 0) e.data_volume_gb = "Enter expected data volume";
     const u = parseFloat(form.uptime_requirement);
-    if (!form.uptime_requirement || u < 90 || u > 100) e.uptime_requirement = "Must be between 90 and 100";
+    if (!form.uptime_requirement || u < 90 || u > 100) e.uptime_requirement = "Must be between 90–100";
     return e;
   };
 
@@ -265,12 +172,15 @@ function Recommendation({ dark }) {
       };
       const res = await axios.post("http://localhost:5001/recommend", payload);
       setResult(res.data);
-      await axios.post("http://localhost:5000/api/history/save", {
-        uid: (await auth.currentUser).uid,
-        type: "recommendation",
-        input: payload,
-        output: res.data,
-      });
+      const user = auth.currentUser;
+      if (user) {
+        await axios.post("http://localhost:5000/api/history/save", {
+          uid: user.uid,
+          type: "recommendation",
+          input: payload,
+          output: res.data,
+        });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -283,317 +193,250 @@ function Recommendation({ dark }) {
     setErrors((e) => ({ ...e, [key]: "" }));
   };
 
-  const labelStyle = {
-    display: "block",
-    fontSize: "12px",
-    fontWeight: 600,
-    marginBottom: "7px",
-    color: dark ? "#cbd5e1" : "#334155",
-  };
-
-  const hintStyle = {
-    fontSize: "11px",
-    marginTop: "6px",
-    color: dark ? "#4a6080" : "#94a3b8",
-  };
-
   const inputCls = (err) =>
-    `rec-input ${dark ? "rec-input-dark" : "rec-input-light"}${err ? " err" : ""}`;
+    `w-full border rounded-lg px-3 py-2 text-sm outline-none transition focus:ring-2
+    ${dark
+      ? "bg-gray-800 border-gray-600 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20"
+      : "bg-white border-gray-200 text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500/20"
+    }
+    ${err ? (dark ? "border-red-500" : "border-red-400") : ""}`;
 
-  const ErrMsg = ({ msg }) =>
-    msg ? (
-      <p style={{ fontSize: "11px", marginTop: "5px", color: "#f87171", display: "flex", alignItems: "center", gap: "4px" }}>
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-          <circle cx="6" cy="6" r="5.5" stroke="currentColor" />
-          <path d="M6 3.5v3M6 8v.5" stroke="currentColor" strokeLinecap="round" />
-        </svg>
-        {msg}
-      </p>
-    ) : null;
+  const labelCls = `block text-xs font-medium mb-1.5 ${dark ? "text-gray-200" : "text-gray-700"}`;
+  const hintCls = `text-[11px] mt-1.5 ${dark ? "text-gray-500" : "text-gray-400"}`;
 
-  const providerColor =
-    !result ? "" :
-    result.provider === "AWS" ? "#fb923c" :
-    result.provider === "Azure" ? "#60a5fa" : "#34d399";
-
-  const providerBg =
-    !result ? "" :
-    result.provider === "AWS"
-      ? dark ? "rgba(251,146,60,0.08)" : "rgba(251,146,60,0.06)"
-      : result.provider === "Azure"
-      ? dark ? "rgba(96,165,250,0.08)" : "rgba(96,165,250,0.06)"
-      : dark ? "rgba(52,211,153,0.08)" : "rgba(52,211,153,0.06)";
-
-  const providerBorder =
-    !result ? "" :
-    result.provider === "AWS" ? "rgba(251,146,60,0.3)" :
-    result.provider === "Azure" ? "rgba(96,165,250,0.3)" : "rgba(52,211,153,0.3)";
+  // Provider accent colours
+  const providerMeta = !result ? {} : {
+    AWS:   { color: "text-orange-400",  ring: "ring-orange-500/30",  bg: dark ? "bg-orange-500/10"  : "bg-orange-50"  },
+    Azure: { color: "text-blue-400",    ring: "ring-blue-500/30",    bg: dark ? "bg-blue-500/10"    : "bg-blue-50"    },
+    GCP:   { color: "text-emerald-400", ring: "ring-emerald-500/30", bg: dark ? "bg-emerald-500/10" : "bg-emerald-50" },
+  }[result?.provider] || { color: "text-blue-400", ring: "ring-blue-500/30", bg: dark ? "bg-blue-500/10" : "bg-blue-50" };
 
   return (
-    <div style={{ minHeight: "100vh", background: dark ? "#0f1420" : "#f1f5f9", padding: "32px 24px" }}>
-      <style>{GLOBAL_CSS}</style>
-      <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+    <div className={`min-h-screen p-6 ${dark ? "bg-gray-950" : "bg-gray-50"}`}>
+      <div className="max-w-5xl mx-auto">
 
-        {/* Header */}
-        <div style={{ marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, color: dark ? "#f1f5f9" : "#0f172a", margin: "0 0 6px 0" }}>
-            AI Recommendation Engine
-          </h1>
-          <p style={{ fontSize: "13px", color: dark ? "#64748b" : "#64748b", margin: 0 }}>
-            Answer a few questions about your workload and the ML model will recommend the optimal cloud configuration.
-          </p>
-        </div>
+        {/* Header — matches Comparison.jsx header */}
+        <h1 className={`text-xl font-bold mb-1 ${dark ? "text-white" : "text-gray-900"}`}>
+          AI Recommendation Engine
+        </h1>
+        <p className={`text-xs mb-6 ${dark ? "text-gray-400" : "text-gray-500"}`}>
+          Answer a few questions about your workload and the ML model will recommend the optimal cloud configuration.
+        </p>
 
-        {/* Section 1 */}
-        <Section title="1 · Workload type" dark={dark} first>
-          <SegmentedControl
-            options={WORKLOAD_OPTIONS}
-            value={form.workload}
-            onChange={(v) => setField("workload", v)}
-            dark={dark}
-          />
-        </Section>
+        {/* ── Section 1 · Workload ─────────────────────────── */}
+        <div className="space-y-4">
+          <Section title="1 · Workload type" dark={dark}>
+            <SegmentedControl
+              options={WORKLOAD_OPTIONS}
+              value={form.workload}
+              onChange={(v) => setField("workload", v)}
+              dark={dark}
+            />
+          </Section>
 
-        {/* Section 2 */}
-        <Section title="2 · Budget & team" dark={dark}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-            <div>
-              <label style={labelStyle}>
-                Monthly budget (USD) <span style={{ color: "#f87171" }}>*</span>
-              </label>
-              <div style={{ position: "relative" }}>
-                <span style={{
-                  position: "absolute", left: "12px", top: "50%",
-                  transform: "translateY(-50%)", fontSize: "13px",
-                  color: dark ? "#64748b" : "#94a3b8", pointerEvents: "none",
-                }}>$</span>
+          {/* ── Section 2 · Budget & Team ────────────────────── */}
+          <Section title="2 · Budget & team" dark={dark}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className={labelCls}>Monthly budget (USD) <span className="text-red-400">*</span></label>
+                <div className="relative">
+                  <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none ${dark ? "text-gray-500" : "text-gray-400"}`}>$</span>
+                  <input
+                    type="number" min="0"
+                    className={inputCls(errors.budget) + " pl-7"}
+                    placeholder="500"
+                    value={form.budget}
+                    onChange={(e) => setField("budget", e.target.value)}
+                  />
+                </div>
+                <ErrMsg msg={errors.budget} />
+                {!errors.budget && <p className={hintCls}>Total expected cloud spend per month</p>}
+              </div>
+              <div>
+                <label className={labelCls}>Team size <span className="text-red-400">*</span></label>
+                <input
+                  type="number" min="1"
+                  className={inputCls(errors.team_size)}
+                  placeholder="10"
+                  value={form.team_size}
+                  onChange={(e) => setField("team_size", e.target.value)}
+                />
+                <ErrMsg msg={errors.team_size} />
+                {!errors.team_size && <p className={hintCls}>Number of engineers on your team</p>}
+              </div>
+            </div>
+          </Section>
+
+          {/* ── Section 3 · Infrastructure ───────────────────── */}
+          <Section title="3 · Infrastructure requirements" dark={dark}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              <div>
+                <label className={labelCls}>Data volume (GB) <span className="text-red-400">*</span></label>
                 <input
                   type="number" min="0"
-                  className={inputCls(errors.budget)}
-                  style={{ paddingLeft: "26px" }}
-                  placeholder="500"
-                  value={form.budget}
-                  onChange={(e) => setField("budget", e.target.value)}
+                  className={inputCls(errors.data_volume_gb)}
+                  placeholder="100"
+                  value={form.data_volume_gb}
+                  onChange={(e) => setField("data_volume_gb", e.target.value)}
                 />
+                <ErrMsg msg={errors.data_volume_gb} />
+                {!errors.data_volume_gb && <p className={hintCls}>Total data to store or process</p>}
               </div>
-              <ErrMsg msg={errors.budget} />
-              {!errors.budget && <p style={hintStyle}>Total expected cloud spend per month</p>}
+              <div>
+                <label className={labelCls}>Uptime requirement (%) <span className="text-red-400">*</span></label>
+                <input
+                  type="number" min="90" max="100" step="0.1"
+                  className={inputCls(errors.uptime_requirement)}
+                  placeholder="99.9"
+                  value={form.uptime_requirement}
+                  onChange={(e) => setField("uptime_requirement", e.target.value)}
+                />
+                <ErrMsg msg={errors.uptime_requirement} />
+                {!errors.uptime_requirement && <p className={hintCls}>e.g. 99.9 for three-nines SLA</p>}
+              </div>
             </div>
-            <div>
-              <label style={labelStyle}>
-                Team size <span style={{ color: "#f87171" }}>*</span>
-              </label>
-              <input
-                type="number" min="1"
-                className={inputCls(errors.team_size)}
-                placeholder="10"
-                value={form.team_size}
-                onChange={(e) => setField("team_size", e.target.value)}
-              />
-              <ErrMsg msg={errors.team_size} />
-              {!errors.team_size && <p style={hintStyle}>Number of engineers on your team</p>}
-            </div>
-          </div>
-        </Section>
 
-        {/* Section 3 */}
-        <Section title="3 · Infrastructure requirements" dark={dark}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-            <div>
-              <label style={labelStyle}>
-                Data volume (GB) <span style={{ color: "#f87171" }}>*</span>
-              </label>
-              <input
-                type="number" min="0"
-                className={inputCls(errors.data_volume_gb)}
-                placeholder="100"
-                value={form.data_volume_gb}
-                onChange={(e) => setField("data_volume_gb", e.target.value)}
-              />
-              <ErrMsg msg={errors.data_volume_gb} />
-              {!errors.data_volume_gb && <p style={hintStyle}>Total data to store or process</p>}
-            </div>
-            <div>
-              <label style={labelStyle}>
-                Uptime requirement (%) <span style={{ color: "#f87171" }}>*</span>
-              </label>
-              <input
-                type="number" min="90" max="100" step="0.1"
-                className={inputCls(errors.uptime_requirement)}
-                placeholder="99.9"
-                value={form.uptime_requirement}
-                onChange={(e) => setField("uptime_requirement", e.target.value)}
-              />
-              <ErrMsg msg={errors.uptime_requirement} />
-              {!errors.uptime_requirement && <p style={hintStyle}>e.g. 99.9 for three-nines SLA</p>}
-            </div>
-          </div>
-          <div style={{ marginBottom: "16px" }}>
-            <label style={{ ...labelStyle, marginBottom: "8px" }}>Scalability need</label>
-            <SegmentedControl
-              options={SCALE_OPTIONS}
-              value={form.scalability}
-              onChange={(v) => setField("scalability", v)}
-              dark={dark}
-            />
-          </div>
-          <div>
-            <label style={{ ...labelStyle, marginBottom: "8px" }}>Security requirement</label>
-            <SegmentedControl
-              options={SECURITY_OPTIONS}
-              value={form.security}
-              onChange={(v) => setField("security", v)}
-              dark={dark}
-            />
-          </div>
-        </Section>
-
-        {/* Section 4 */}
-        <Section title="4 · Deployment region" dark={dark}>
-          <div style={{ display: "flex", gap: "10px" }}>
-            {REGION_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                className="region-btn"
-                onClick={() => setField("region", opt.value)}
-                style={{
-                  flex: 1,
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  border: form.region === opt.value
-                    ? "1px solid #3b82f6"
-                    : dark ? "1px solid #222b3a" : "1px solid #cbd5e1",
-                  background: form.region === opt.value
-                    ? "#3b82f6"
-                    : dark ? "#181e2c" : "#f8fafc",
-                  color: form.region === opt.value
-                    ? "#ffffff"
-                    : dark ? "#94a3b8" : "#475569",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </Section>
-
-        {/* Section 5 */}
-        <Section title="5 · Additional factors" dark={dark}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-            {TOGGLES.map((t) => (
-              <ToggleRow
-                key={t.field}
-                field={t.field}
-                label={t.label}
-                desc={t.desc}
-                value={form[t.field]}
-                onChange={setToggle}
+            <div className="mb-4">
+              <label className={`${labelCls} mb-2`}>Scalability need</label>
+              <SegmentedControl
+                options={SCALE_OPTIONS}
+                value={form.scalability}
+                onChange={(v) => setField("scalability", v)}
                 dark={dark}
               />
-            ))}
-          </div>
-        </Section>
-
-        {/* Submit */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            width: "100%",
-            marginTop: "14px",
-            padding: "13px",
-            borderRadius: "10px",
-            border: "none",
-            background: loading ? "#60a5fa" : "#3b82f6",
-            color: "white",
-            fontSize: "14px",
-            fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            transition: "background 0.15s ease",
-          }}
-          onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = "#2563eb"; }}
-          onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = "#3b82f6"; }}
-        >
-          {loading ? (
-            <>
-              <svg className="rec-spin" style={{ width: "16px", height: "16px" }} viewBox="0 0 24 24" fill="none">
-                <circle style={{ opacity: 0.25 }} cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path style={{ opacity: 0.75 }} fill="currentColor" d="M4 12a8 8 0 018-8v4a8 8 0 00-8 8h4z" />
-              </svg>
-              Analyzing your requirements…
-            </>
-          ) : (
-            "Get AI recommendation"
-          )}
-        </button>
-
-        {/* Result */}
-        {result && (
-          <div style={{
-            marginTop: "14px",
-            background: dark ? "#171c2b" : "#ffffff",
-            border: dark ? "1px solid #222b3a" : "1px solid #e2e8f0",
-            borderRadius: "12px",
-            padding: "24px",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e" }} />
-              <p style={{
-                fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em",
-                textTransform: "uppercase", color: dark ? "#4a6080" : "#94a3b8", margin: 0,
-              }}>
-                Recommendation
-              </p>
             </div>
+            <div>
+              <label className={`${labelCls} mb-2`}>Security requirement</label>
+              <SegmentedControl
+                options={SECURITY_OPTIONS}
+                value={form.security}
+                onChange={(v) => setField("security", v)}
+                dark={dark}
+              />
+            </div>
+          </Section>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "16px" }}>
-              {[
-                { label: "Cloud provider", value: result.provider, color: providerColor, bg: providerBg, border: providerBorder },
-                { label: "Service model", value: result.serviceModel, color: dark ? "#a78bfa" : "#7c3aed", bg: dark ? "rgba(167,139,250,0.08)" : "rgba(124,58,237,0.06)", border: "rgba(167,139,250,0.3)" },
-                { label: "Deployment", value: result.deploymentModel, color: dark ? "#34d399" : "#059669", bg: dark ? "rgba(52,211,153,0.08)" : "rgba(5,150,105,0.06)", border: "rgba(52,211,153,0.3)" },
-              ].map((item) => (
-                <div key={item.label} style={{
-                  borderRadius: "8px",
-                  border: `1px solid ${item.border}`,
-                  padding: "16px",
-                  textAlign: "center",
-                  background: item.bg,
-                }}>
-                  <p style={{ fontSize: "11px", marginBottom: "6px", color: dark ? "#64748b" : "#94a3b8", margin: "0 0 6px 0" }}>{item.label}</p>
-                  <p style={{ fontSize: "15px", fontWeight: 700, color: item.color, margin: 0 }}>{item.value}</p>
-                </div>
+          {/* ── Section 4 · Region ───────────────────────────── */}
+          <Section title="4 · Deployment region" dark={dark}>
+            <div className="flex gap-3">
+              {REGION_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setField("region", opt.value)}
+                  className={`flex-1 py-2.5 px-3 rounded-lg border text-sm font-medium transition-all duration-150
+                    ${form.region === opt.value
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : dark
+                        ? "bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500 hover:text-white"
+                        : "bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
+                    }`}
+                >
+                  {opt.label}
+                </button>
               ))}
             </div>
+          </Section>
 
-            <div style={{
-              borderRadius: "8px",
-              padding: "16px",
-              background: dark ? "#0f1420" : "#f8fafc",
-              border: dark ? "1px solid #222b3a" : "1px solid #e2e8f0",
-            }}>
-              <p style={{
-                fontSize: "10px", fontWeight: 700, letterSpacing: "0.1em",
-                textTransform: "uppercase", marginBottom: "8px",
-                color: dark ? "#4a6080" : "#94a3b8", margin: "0 0 8px 0",
-              }}>
-                Why this recommendation
-              </p>
-              <p style={{ fontSize: "13px", lineHeight: 1.7, color: dark ? "#94a3b8" : "#475569", margin: 0 }}>
-                {result.reason}
-              </p>
+          {/* ── Section 5 · Additional Factors ──────────────── */}
+          <Section title="5 · Additional factors" dark={dark}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {TOGGLES.map((t) => (
+                <ToggleRow
+                  key={t.field}
+                  field={t.field}
+                  label={t.label}
+                  desc={t.desc}
+                  value={form[t.field]}
+                  onChange={setToggle}
+                  dark={dark}
+                />
+              ))}
             </div>
-          </div>
-        )}
+          </Section>
 
+          {/* ── Submit Button ────────────────────────────────── */}
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold text-sm
+              hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed
+              flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a8 8 0 00-8 8h4z" />
+                </svg>
+                Analyzing your requirements…
+              </>
+            ) : (
+              "Get AI Recommendation"
+            )}
+          </button>
+
+          {/* ── Result Card ──────────────────────────────────── */}
+          {result && (
+            <div className={`rounded-xl border shadow-sm ${dark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-100"}`}>
+
+              {/* Result header */}
+              <div className={`flex items-center gap-2 px-6 py-4 border-b ${dark ? "border-gray-800" : "border-gray-100"}`}>
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                <p className={`text-[10px] font-bold tracking-widest uppercase ${dark ? "text-gray-500" : "text-gray-400"}`}>
+                  Recommendation
+                </p>
+              </div>
+
+              <div className="p-6">
+                {/* 3 stat tiles */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+                  {[
+                    {
+                      label: "Cloud Provider",
+                      value: result.provider,
+                      cls: providerMeta.color,
+                      bg: providerMeta.bg,
+                      ring: providerMeta.ring,
+                    },
+                    {
+                      label: "Service Model",
+                      value: result.serviceModel,
+                      cls: dark ? "text-violet-400" : "text-violet-600",
+                      bg: dark ? "bg-violet-500/10" : "bg-violet-50",
+                      ring: "ring-violet-500/30",
+                    },
+                    {
+                      label: "Deployment",
+                      value: result.deploymentModel,
+                      cls: dark ? "text-emerald-400" : "text-emerald-600",
+                      bg: dark ? "bg-emerald-500/10" : "bg-emerald-50",
+                      ring: "ring-emerald-500/30",
+                    },
+                  ].map((item) => (
+                    <div
+                      key={item.label}
+                      className={`rounded-lg p-4 text-center ring-1 ${item.bg} ${item.ring}`}
+                    >
+                      <p className={`text-[11px] mb-1.5 ${dark ? "text-gray-500" : "text-gray-400"}`}>{item.label}</p>
+                      <p className={`text-base font-bold ${item.cls}`}>{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Reasoning box */}
+                <div className={`rounded-lg p-4 ${dark ? "bg-gray-950 border border-gray-800" : "bg-gray-50 border border-gray-100"}`}>
+                  <p className={`text-[10px] font-bold tracking-widest uppercase mb-2 ${dark ? "text-gray-500" : "text-gray-400"}`}>
+                    Why this recommendation
+                  </p>
+                  <p className={`text-xs leading-relaxed ${dark ? "text-gray-300" : "text-gray-600"}`}>
+                    {result.reason}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
