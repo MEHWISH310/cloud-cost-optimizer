@@ -19,8 +19,8 @@ import os
 
 def plot_learning_curve(model, X, y, target_name, use_scaled=False, scaler=None):
     """
-    Plots training vs validation accuracy learning curve
-    and saves to learning_curve_<target>.png
+    Plots training vs validation accuracy AND loss (1 - accuracy) learning curves
+    in the same figure (two subplots), saves to learning_curve_<target>.png
     """
     if use_scaled and scaler is not None:
         X_plot = scaler.transform(X)
@@ -38,24 +38,34 @@ def plot_learning_curve(model, X, y, target_name, use_scaled=False, scaler=None)
         random_state=42
     )
 
-    train_mean = train_scores.mean(axis=1)
-    train_std  = train_scores.std(axis=1)
-    val_mean   = val_scores.mean(axis=1)
-    val_std    = val_scores.std(axis=1)
+    train_acc  = train_scores.mean(axis=1)
+    val_acc    = val_scores.mean(axis=1)
+    train_loss = 1 - train_acc
+    val_loss   = 1 - val_acc
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(train_sizes, train_mean, 'o-', color='#2196F3', linewidth=2, label='Training Accuracy')
-    ax.plot(train_sizes, val_mean,   's-', color='#FF9800', linewidth=2, label='Validation Accuracy')
-    ax.fill_between(train_sizes, train_mean - train_std, train_mean + train_std,
-                    alpha=0.15, color='#2196F3')
-    ax.fill_between(train_sizes, val_mean - val_std, val_mean + val_std,
-                    alpha=0.15, color='#FF9800')
-    ax.set_xlabel('Training Set Size', fontsize=12)
-    ax.set_ylabel('Accuracy', fontsize=12)
-    ax.set_title(f'Learning Curve — {target_name}', fontsize=13, fontweight='bold')
-    ax.legend(fontsize=11)
-    ax.set_ylim([0.6, 1.05])
-    ax.grid(True, linestyle='--', alpha=0.5)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+
+    # ── Accuracy subplot ──────────────────────────────────────────────────────
+    ax1.plot(train_sizes, train_acc, 'o-', color='#2196F3', linewidth=2, label='Training Accuracy')
+    ax1.plot(train_sizes, val_acc,   's-', color='#FF9800', linewidth=2, label='Validation Accuracy')
+    ax1.set_xlabel('Training Set Size', fontsize=12)
+    ax1.set_ylabel('Accuracy', fontsize=12)
+    ax1.set_title(f'Accuracy — {target_name}', fontsize=13, fontweight='bold')
+    ax1.legend(fontsize=11)
+    ax1.set_ylim([0.6, 1.05])
+    ax1.grid(True, linestyle='--', alpha=0.5)
+
+    # ── Loss subplot ──────────────────────────────────────────────────────────
+    ax2.plot(train_sizes, train_loss, 'o-', color='#2196F3', linewidth=2, label='Training Loss')
+    ax2.plot(train_sizes, val_loss,   's-', color='#FF9800', linewidth=2, label='Validation Loss')
+    ax2.set_xlabel('Training Set Size', fontsize=12)
+    ax2.set_ylabel('Loss (1 − Accuracy)', fontsize=12)
+    ax2.set_title(f'Loss — {target_name}', fontsize=13, fontweight='bold')
+    ax2.legend(fontsize=11)
+    ax2.set_ylim([-0.02, 0.45])
+    ax2.grid(True, linestyle='--', alpha=0.5)
+
+    plt.suptitle(f'Learning Curve — {target_name}', fontsize=14, fontweight='bold', y=1.02)
     plt.tight_layout()
 
     fname = f'learning_curve_{target_name.replace(" ", "_").lower()}.png'
@@ -67,11 +77,14 @@ def plot_learning_curve(model, X, y, target_name, use_scaled=False, scaler=None)
 def plot_confusion_matrix(y_test, y_pred, classes, target_name):
     """
     Plots and saves confusion matrix as confusion_matrix_<target>.png
+    X-axis = Predicted Label, Y-axis = Actual Label
     """
     cm = confusion_matrix(y_test, y_pred)
     fig, ax = plt.subplots(figsize=(6, 5))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=classes)
     disp.plot(ax=ax, colorbar=True, cmap='Blues', values_format='d')
+    ax.set_xlabel('Predicted Model', fontsize=12)
+    ax.set_ylabel('Actual Model', fontsize=12)
     ax.set_title(f'Confusion Matrix — {target_name}', fontsize=13, fontweight='bold')
     plt.tight_layout()
 
@@ -231,7 +244,7 @@ def train_models():
         # ── Generate plots ─────────────────────────────────────────────────
         print(f"\n  Generating plots for {label}...")
 
-        # 1. Learning curve
+        # 1. Learning curve (accuracy + loss in same figure)
         plot_learning_curve(
             best_model, X_train,
             le_target.transform(df.loc[X_train.index, target]),
