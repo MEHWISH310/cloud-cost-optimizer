@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def generate_dataset(n=2000):
+def generate_dataset(n=5000):
     np.random.seed(42)
 
     workloads = ["startup", "webapp", "enterprise", "ml"]
